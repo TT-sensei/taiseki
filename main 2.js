@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initStep0();
   initStep1();
   initStep2();
+  initStep3();
 
   // ---- 公式レスキュー ----
   const rescueBtn = document.getElementById('rescueBtn');
