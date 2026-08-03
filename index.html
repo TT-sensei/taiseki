@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>めんせき・たいせきラボ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=BIZ+UDPGothic:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ヘッダー：ノート表紙風タブナビ -->
+<header class="app-header">
+  <div class="header-inner">
+    <h1 class="app-title"><span class="title-mensek">めんせき</span><span class="title-dot">・</span><span class="title-taisek">たいせき</span>ラボ</h1>
+    <p class="app-sub">いじって、わかる。図形の公式ずかん</p>
+  </div>
+  <nav class="step-tabs" id="stepTabs">
+    <button class="tab" data-step="0"><span class="tab-num">0</span><span class="tab-label">こうしきずかん</span></button>
+    <button class="tab" data-step="1"><span class="tab-num">1</span><span class="tab-label">たかさ1cmの魔法</span></button>
+    <button class="tab" data-step="2"><span class="tab-num">2</span><span class="tab-label">ふくごうパズル</span></button>
+  </nav>
+</header>
+
+<main id="app">
+
+  <!-- ========== STEP 0 ========== -->
+  <section class="screen" id="screen-step0" data-screen="0">
+    <p class="screen-lead">図形をタップして、へんしんさせよう！かたちが変わっても、めんせきは同じだよ。</p>
+    <div class="shape-grid" id="shapeGrid"></div>
+  </section>
+
+  <!-- ========== STEP 1 ========== -->
+  <section class="screen" id="screen-step1" data-screen="1">
+    <p class="screen-lead">底面をえらんで、たかさを のばしてみよう！ 底面積 × 高さ ＝ 体積 だよ。</p>
+    <div class="step1-layout">
+      <div class="shape-picker" id="shapePicker"></div>
+      <div class="stack-stage">
+        <div id="stackCanvas" class="stack-canvas"></div>
+        <div class="stack-controls">
+          <label for="heightSlider">たかさ：<span id="heightVal">1</span> cm</label>
+          <input type="range" id="heightSlider" min="1" max="10" value="1" step="1">
+          <label class="side-toggle">
+            <input type="checkbox" id="sideCountToggle"> 角柱の角をふやして円柱に近づける
+          </label>
+          <input type="range" id="sideSlider" min="3" max="24" value="4" step="1" disabled>
+        </div>
+        <div class="formula-readout" id="volumeFormula">底面積 (?) × 高さ (1) ＝ 体積 (?)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== STEP 2 ========== -->
+  <section class="screen" id="screen-step2" data-screen="2">
+    <p class="screen-lead">いろをあわせて、しきを完成させよう！</p>
+    <div class="step2-layout">
+      <div class="puzzle-figure-wrap">
+        <svg id="puzzleSvg" viewBox="0 0 400 320"></svg>
+        <div class="split-controls">
+          <button id="splitBtn" class="btn-secondary">✂️ 切り取り線を入れる</button>
+        </div>
+      </div>
+      <div class="puzzle-answer-wrap">
+        <div id="puzzleForm" class="puzzle-form"></div>
+        <button id="checkBtn" class="btn-primary">こたえあわせ</button>
+        <div id="puzzleFeedback" class="puzzle-feedback"></div>
+        <div class="puzzle-nav">
+          <button id="prevProblemBtn" class="btn-ghost">◀ まえの問題</button>
+          <span id="problemCounter">1 / 3</span>
+          <button id="nextProblemBtn" class="btn-ghost">つぎの問題 ▶</button>
+        </div>
+      </div>
+    </div>
+    <div id="bonusPanel" class="bonus-panel hidden">
+      <h3>🎁 プチ発見コーナー</h3>
+      <p>柱体をななめにけずると…実は中学校で習う「すい体（角すい・円すい）」になるよ！体積はなんと <strong>3分の1</strong>！</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- 公式レスキュー：どの画面からでも呼べるヒントボタン -->
+<button id="rescueBtn" class="rescue-fab" aria-label="公式レスキュー">？</button>
+<div id="rescueModal" class="rescue-modal hidden">
+  <div class="rescue-modal-inner">
+    <button id="rescueClose" class="rescue-close">✕</button>
+    <h3>公式レスキュー</h3>
+    <div id="rescueContent" class="rescue-content"></div>
+  </div>
+</div>
+
+<script src="js/shapes-data.js"></script>
+<script src="js/step0.js"></script>
+<script src="js/step1.js"></script>
+<script src="js/step2-data.js"></script>
+<script src="js/step2.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
