@@ -1,0 +1,383 @@
+/* =========================================================
+   めんせき・たいせきラボ ー トークン
+   コンセプト：自由研究ノートのグラフ用紙。図形そのものが主役。
+   ========================================================= */
+:root{
+  --paper:      #F3F7ED;
+  --paper-line: #D9E6CC;
+  --ink:        #1F3A3D;
+  --ink-soft:   #4C6660;
+  --teal:       #1FA6A0;
+  --teal-deep:  #0E7C78;
+  --sun:        #FFB100;
+  --sun-soft:   #FFE3A3;
+  --coral:      #FF6F5E;
+  --red:        #FF5D5D;
+  --blue:       #4D96FF;
+  --white:      #FFFFFF;
+  --shadow:     0 6px 0 rgba(31,58,61,0.12);
+  --shadow-sm:  0 3px 0 rgba(31,58,61,0.12);
+  --radius:     18px;
+  --font-display: "Zen Maru Gothic", sans-serif;
+  --font-body: "BIZ UDPGothic", "Zen Maru Gothic", sans-serif;
+}
+
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+
+body{
+  font-family: var(--font-body);
+  color: var(--ink);
+  background:
+    radial-gradient(var(--paper-line) 1.4px, transparent 1.4px) 0 0/22px 22px,
+    var(--paper);
+  min-height:100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button{ font-family: inherit; cursor:pointer; }
+
+/* ---------- ヘッダー ---------- */
+.app-header{
+  background: var(--white);
+  border-bottom: 3px solid var(--ink);
+  position: sticky; top:0; z-index: 30;
+}
+.header-inner{
+  max-width: 960px; margin:0 auto;
+  padding: 14px 18px 6px;
+  text-align:center;
+}
+.app-title{
+  font-family: var(--font-display);
+  font-weight:900;
+  font-size: clamp(22px, 5vw, 32px);
+  margin:0;
+  letter-spacing: .02em;
+}
+.title-mensek{ color: var(--teal-deep); }
+.title-dot{ color: var(--ink-soft); }
+.title-taisek{ color: var(--coral); }
+.app-sub{
+  margin: 2px 0 10px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.step-tabs{
+  max-width: 960px; margin: 0 auto;
+  display:flex; gap:8px;
+  padding: 0 12px;
+  overflow-x:auto;
+}
+.tab{
+  flex: 1 1 0;
+  min-width: 110px;
+  background: var(--paper);
+  border: 2.5px solid var(--ink);
+  border-bottom:none;
+  border-radius: 12px 12px 0 0;
+  padding: 8px 6px 10px;
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  transform: translateY(3px);
+  transition: transform .15s ease, background .15s ease;
+}
+.tab .tab-num{
+  font-family: var(--font-display);
+  font-weight:900;
+  font-size:18px;
+  width:26px;height:26px;
+  border-radius:50%;
+  background: var(--ink);
+  color: var(--white);
+  display:flex;align-items:center;justify-content:center;
+}
+.tab .tab-label{ font-size:11.5px; font-weight:700; color:var(--ink-soft); }
+.tab.active{
+  background: var(--teal);
+  transform: translateY(0);
+}
+.tab.active .tab-num{ background: var(--white); color: var(--teal-deep); }
+.tab.active .tab-label{ color: var(--white); }
+
+/* ---------- メイン共通 ---------- */
+main{ max-width: 960px; margin: 0 auto; padding: 18px 14px 90px; }
+.screen{ display:none; animation: fadeUp .35s ease; }
+.screen.active{ display:block; }
+@keyframes fadeUp{
+  from{ opacity:0; transform: translateY(8px); }
+  to{ opacity:1; transform: translateY(0); }
+}
+.screen-lead{
+  font-weight:700;
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--sun-soft);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  margin: 0 0 16px;
+}
+
+/* ---------- Step0: 図形カード ---------- */
+.shape-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+.shape-card{
+  background: var(--white);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 14px 16px;
+  display:flex; flex-direction:column; gap:8px;
+}
+.shape-card h3{
+  margin:0; font-family: var(--font-display);
+  font-size:16px; display:flex; align-items:center; gap:6px;
+}
+.shape-stage{
+  background: var(--paper);
+  border-radius: 12px;
+  border: 1.5px dashed var(--paper-line);
+  aspect-ratio: 4/3;
+  overflow:hidden;
+}
+.shape-stage svg{ width:100%; height:100%; display:block; }
+.shape-actions{ display:flex; align-items:center; gap:8px; justify-content:space-between; }
+.btn-morph{
+  background: var(--teal);
+  color: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight:700;
+  font-size: 13.5px;
+  box-shadow: var(--shadow-sm);
+  transition: transform .1s;
+}
+.btn-morph:active{ transform: translateY(2px); box-shadow:none; }
+.btn-morph.done{ background: var(--sun); }
+.formula-tag{
+  font-size: 13px;
+  font-weight:700;
+  color: var(--teal-deep);
+  opacity:0;
+  transform: translateY(4px);
+  transition: all .35s ease;
+  min-height: 18px;
+}
+.formula-tag.show{ opacity:1; transform:none; }
+
+/* shape svg element helpers */
+.piece{ transition: transform .9s cubic-bezier(.34,1.4,.4,1); }
+.piece-outline{ fill:none; stroke: var(--ink); stroke-width:2.5; }
+.fill-teal{ fill: rgba(31,166,160,.55); }
+.fill-coral{ fill: rgba(255,111,94,.55); }
+.fill-sun{ fill: rgba(255,177,0,.45); }
+.guide-dash{ stroke: var(--ink-soft); stroke-width:1.6; stroke-dasharray:5 4; fill:none; }
+.rect-grow{
+  fill:none; stroke: var(--coral); stroke-width:3;
+  transform-box: fill-box; transform-origin: center;
+  transform: scale(0);
+  transition: transform .7s cubic-bezier(.34,1.4,.4,1);
+}
+.rect-grow.show{ transform: scale(1); }
+.half-shade{
+  fill: rgba(255,111,94,.35);
+  opacity:0;
+  transition: opacity .5s ease .5s;
+}
+.half-shade.show{ opacity:1; }
+
+/* ---------- Step1 ---------- */
+.step1-layout{ display:grid; grid-template-columns: 220px 1fr; gap:16px; }
+@media (max-width:720px){ .step1-layout{ grid-template-columns:1fr; } }
+.shape-picker{
+  display:flex; flex-direction:row; flex-wrap:wrap;
+  gap:8px;
+}
+@media (min-width:721px){ .shape-picker{ flex-direction:column; } }
+.picker-btn{
+  background: var(--white);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  padding: 10px;
+  font-weight:700;
+  font-size:13px;
+  flex: 1 1 auto;
+  min-width: 90px;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  box-shadow: var(--shadow-sm);
+}
+.picker-btn .pk-swatch{ width:34px; height:24px; border-radius:4px; }
+.picker-btn.active{ background: var(--teal); color:var(--white); }
+
+.stack-stage{
+  background: var(--white);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px;
+}
+.stack-canvas{
+  height: 320px;
+  display:flex; align-items:flex-end; justify-content:center;
+  perspective: 900px;
+}
+.iso-scene{
+  transform-style: preserve-3d;
+  transform: rotateX(52deg) rotateZ(-38deg);
+  position:relative;
+}
+.iso-layer{
+  position:absolute;
+  left:0; top:0;
+  border: 1.6px solid rgba(31,58,61,.55);
+  box-shadow: 0 0 0 1px rgba(255,255,255,.15) inset;
+}
+.stack-controls{ margin-top:14px; display:flex; flex-direction:column; gap:8px; }
+.stack-controls label{ font-size: 13.5px; font-weight:700; }
+.stack-controls input[type=range]{ width:100%; accent-color: var(--teal); }
+.side-toggle{ display:flex; align-items:center; gap:6px; margin-top:6px; }
+.formula-readout{
+  margin-top:14px;
+  background: var(--sun-soft);
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight:700;
+  text-align:center;
+  font-size: 15px;
+}
+
+/* ---------- Step2 ---------- */
+.step2-layout{ display:grid; grid-template-columns: 1.1fr 1fr; gap:18px; }
+@media (max-width:800px){ .step2-layout{ grid-template-columns:1fr; } }
+.puzzle-figure-wrap{
+  background: var(--white);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px;
+}
+#puzzleSvg{ width:100%; height:auto; display:block; }
+.split-controls{ margin-top:10px; text-align:center; }
+.btn-secondary{
+  background: var(--white);
+  border:2px solid var(--ink);
+  border-radius:999px;
+  padding: 9px 18px;
+  font-weight:700;
+  box-shadow: var(--shadow-sm);
+}
+.btn-secondary:disabled{ opacity:.4; cursor:default; }
+
+.puzzle-answer-wrap{
+  background: var(--white);
+  border: 2.5px solid var(--ink);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  display:flex; flex-direction:column; gap:12px;
+}
+.puzzle-form{ font-size:16px; font-weight:700; line-height:2.4; }
+.puzzle-form .eq-input{
+  width: 54px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  text-align:center;
+  font-weight:700;
+  font-size:15px;
+  padding: 4px 2px;
+  font-family: inherit;
+}
+.puzzle-form .eq-input.c-red{ border-color: var(--red); background: rgba(255,93,93,.08); }
+.puzzle-form .eq-input.c-blue{ border-color: var(--blue); background: rgba(77,150,255,.08); }
+.puzzle-form .eq-input.wrong{ background: rgba(255,177,0,.25); }
+.puzzle-form .swatch-tag{
+  display:inline-block; width:12px;height:12px;border-radius:3px; margin-right:3px; vertical-align:middle;
+}
+.btn-primary{
+  background: var(--teal); color:var(--white);
+  border:2px solid var(--ink); border-radius:999px;
+  padding: 12px; font-weight:900; font-size:15px;
+  box-shadow: var(--shadow);
+}
+.btn-primary:active{ transform: translateY(3px); box-shadow:none; }
+.puzzle-feedback{
+  min-height: 40px;
+  font-weight:700;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size:14px;
+}
+.puzzle-feedback.ok{ background: rgba(31,166,160,.15); color: var(--teal-deep); }
+.puzzle-feedback.hint{ background: rgba(255,177,0,.18); color:#8A5A00; }
+.puzzle-nav{ display:flex; align-items:center; justify-content:space-between; margin-top:auto; font-size:13px; font-weight:700; }
+.btn-ghost{ background:none; border:none; color: var(--teal-deep); font-weight:700; }
+.btn-ghost:disabled{ opacity:.3; }
+
+.bonus-panel{
+  margin-top:18px;
+  background: var(--ink);
+  color: var(--white);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  animation: fadeUp .4s ease;
+}
+.bonus-panel h3{ margin:0 0 6px; font-family: var(--font-display); }
+.bonus-panel.hidden{ display:none; }
+
+.layer-pop{
+  animation: layerPop .35s cubic-bezier(.34,1.6,.4,1);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes layerPop{
+  0%{ transform: scale(.4,.2); opacity:0; }
+  60%{ transform: scale(1.06,1.15); opacity:1; }
+  100%{ transform: scale(1,1); opacity:1; }
+}
+.cut-line{ stroke: var(--ink); stroke-width:2.5; stroke-dasharray:6 5; opacity:0; transition:opacity .4s; }
+.cut-line.show{ opacity:1; }
+.region-red{ fill: rgba(255,93,93,.4); stroke: var(--red); stroke-width:2; transition: fill .3s; }
+.region-blue{ fill: rgba(77,150,255,.4); stroke: var(--blue); stroke-width:2; transition: fill .3s; }
+.region-plain{ fill: rgba(31,58,61,.08); stroke: var(--ink); stroke-width:2; }
+.dim-label{ font-size:13px; font-weight:700; fill: var(--ink); font-family: var(--font-body); }
+
+/* ---------- 公式レスキュー ---------- */
+.rescue-fab{
+  position: fixed; right:16px; bottom:16px; z-index:40;
+  width:56px; height:56px; border-radius:50%;
+  background: var(--coral); color:var(--white);
+  border: 3px solid var(--ink);
+  font-family: var(--font-display); font-weight:900; font-size:24px;
+  box-shadow: var(--shadow);
+}
+.rescue-fab:active{ transform: translateY(3px); box-shadow:none; }
+.rescue-modal{
+  position: fixed; inset:0; z-index:50;
+  background: rgba(31,58,61,.55);
+  display:flex; align-items:flex-end; justify-content:center;
+}
+@media (min-width:640px){ .rescue-modal{ align-items:center; } }
+.rescue-modal.hidden{ display:none; }
+.rescue-modal-inner{
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 22px 22px 0 0;
+  max-width: 480px; width:100%;
+  max-height: 80vh; overflow-y:auto;
+  padding: 20px;
+  position:relative;
+}
+@media (min-width:640px){ .rescue-modal-inner{ border-radius:22px; } }
+.rescue-close{
+  position:absolute; right:14px; top:14px;
+  background: var(--white); border:2px solid var(--ink); border-radius:50%;
+  width:32px;height:32px; font-weight:700;
+}
+.rescue-content h4{ font-family: var(--font-display); margin: 14px 0 4px; }
+.rescue-content ul{ margin:0; padding-left: 18px; }
+.rescue-content li{ margin-bottom:6px; }
