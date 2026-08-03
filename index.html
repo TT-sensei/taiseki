@@ -18,6 +18,7 @@
     <button class="tab" data-step="0"><span class="tab-num">0</span><span class="tab-label">こうしきずかん</span></button>
     <button class="tab" data-step="1"><span class="tab-num">1</span><span class="tab-label">たかさ1cmの魔法</span></button>
     <button class="tab" data-step="2"><span class="tab-num">2</span><span class="tab-label">ふくごうパズル</span></button>
+    <button class="tab" data-step="3"><span class="tab-num">3</span><span class="tab-label">たいせきドリル</span></button>
   </nav>
 </header>
 
@@ -76,6 +77,72 @@
     </div>
   </section>
 
+  <!-- ========== STEP 3 ========== -->
+  <section class="screen" id="screen-step3" data-screen="3">
+    <p class="screen-lead">レベルをえらんで、体積の問題にどんどんチャレンジしよう！</p>
+
+    <div class="drill-toolbar">
+      <div class="level-selector" id="levelSelector" aria-label="レベルを選ぶ">
+        <button type="button" class="level-btn active" data-level="1"><b>Lv.1</b><span>直方体・立方体</span></button>
+        <button type="button" class="level-btn" data-level="2"><b>Lv.2</b><span>角柱・円柱</span></button>
+        <button type="button" class="level-btn" data-level="3"><b>Lv.3</b><span>いろいろな底面</span></button>
+      </div>
+      <label class="weak-toggle" for="weakToggle">
+        <input type="checkbox" id="weakToggle">
+        <span><b>にがて復習</b><small><span id="weakCount">0</span>問</small></span>
+      </label>
+    </div>
+
+    <div class="drill-stats" aria-label="ドリルの記録">
+      <span>正解 <b id="drillCorrectCount">0</b>問</span>
+      <span id="comboDisplay" class="combo-display hidden">🔥 <b id="comboCount">0</b>コンボ！</span>
+    </div>
+
+    <div id="drillEmpty" class="drill-empty hidden">
+      <div aria-hidden="true">🌱</div>
+      <h3>復習する問題はありません</h3>
+      <p>通常ドリルで間違えた問題が、ここに自動で入ります。</p>
+      <button type="button" id="returnNormalBtn" class="btn-primary">通常ドリルにもどる</button>
+    </div>
+
+    <div id="drillPanel" class="drill-panel">
+      <div class="drill-question-head">
+        <span id="drillLevelTag" class="drill-level-tag">Lv.1</span>
+        <span id="drillModeTag" class="drill-mode-tag hidden">にがて復習</span>
+        <span id="drillProblemNumber" class="drill-problem-number">1問目</span>
+      </div>
+
+      <div class="drill-main">
+        <div class="drill-visual-wrap">
+          <svg id="drillSvg" class="drill-svg" viewBox="0 0 360 280" role="img" aria-label="体積を求める立体"></svg>
+          <div class="role-legend"><span class="role-base">■ 底面積</span><span class="role-height">■ 高さ</span></div>
+        </div>
+        <div class="drill-answer-wrap">
+          <p class="drill-solid-name" id="drillSolidName"></p>
+          <h2 id="drillQuestionText">体積を求めましょう。</h2>
+
+          <div class="role-cards">
+            <div class="role-card base-card"><small>① 赤い底面の面積</small><strong id="baseRoleText">？ cm²</strong></div>
+            <div class="role-card height-card"><small>② 青い高さ</small><strong id="heightRoleText">？ cm</strong></div>
+          </div>
+
+          <form id="drillAnswerForm" class="drill-answer-form">
+            <label for="drillAnswer">体積</label>
+            <div><input type="number" id="drillAnswer" inputmode="decimal" min="0" step="any" autocomplete="off"><span>cm³</span></div>
+            <button type="submit" class="btn-primary">答えあわせ</button>
+          </form>
+
+          <div id="drillFeedback" class="drill-feedback" role="status" aria-live="polite"></div>
+          <div id="drillHint" class="drill-hint hidden"></div>
+          <div class="drill-actions">
+            <button type="button" id="drillHintBtn" class="btn-secondary">ヒントを1つ見る</button>
+            <button type="button" id="drillNextBtn" class="btn-primary hidden">つぎの問題 ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <!-- 公式レスキュー：どの画面からでも呼べるヒントボタン -->
@@ -93,6 +160,8 @@
 <script src="step1.js"></script>
 <script src="step2-data.js"></script>
 <script src="step2.js"></script>
+<script src="step3-data.js"></script>
+<script src="step3.js"></script>
 <script src="main%202.js"></script>
 </body>
 </html>
