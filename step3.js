@@ -108,51 +108,50 @@ function initStep3(){
 
   function renderDrillDiagram(p){
     const svg = document.getElementById('drillSvg');
-    const top = shapePoints(p.shape, 0, -62);
-    const bottom = shapePoints(p.shape, 0, 55);
-    if(p.shape === 'circle'){
-      svg.innerHTML = `
-        <ellipse cx="165" cy="80" rx="74" ry="30" class="drill-top"/>
-        <path d="M91 80 V205 M239 80 V205" class="drill-side"/>
-        <ellipse cx="165" cy="205" rx="74" ry="30" class="drill-base"/>
-        <line x1="165" y1="205" x2="239" y2="205" class="drill-radius"/>
-        <text x="195" y="225" class="drill-dim">半径 ${p.dimensions.radius}cm</text>
-        ${heightArrow(p.solidHeight)}`;
-      return;
-    }
-    const pairs = top.map((point, index) => `<line x1="${point[0]}" y1="${point[1]}" x2="${bottom[index][0]}" y2="${bottom[index][1]}" class="drill-side"/>`).join('');
-    svg.innerHTML = `
-      <polygon points="${top.map(x=>x.join(',')).join(' ')}" class="drill-top"/>
-      ${pairs}
-      <polygon points="${bottom.map(x=>x.join(',')).join(' ')}" class="drill-base"/>
-      ${baseLabels(p)}
-      ${heightArrow(p.solidHeight)}`;
-  }
-
-  function shapePoints(shape, dx, dy){
-    const sets = {
-      square:[[105,75],[225,75],[225,165],[105,165]],
-      rectangle:[[85,82],[245,82],[245,158],[85,158]],
-      triangle:[[165,55],[255,165],[75,165]],
-      parallelogram:[[115,65],[255,65],[215,165],[75,165]],
-      trapezoid:[[125,65],[215,65],[255,165],[75,165]],
-      rhombus:[[165,48],[255,115],[165,182],[75,115]]
-    };
-    return (sets[shape] || sets.rectangle).map(p => [p[0] + dx, p[1] + dy]);
-  }
-
-  function heightArrow(value){
-    return `<line x1="290" y1="76" x2="290" y2="218" class="drill-height"/><path d="M284 86 L290 76 L296 86 M284 208 L290 218 L296 208" class="drill-height-tip"/><text x="300" y="152" class="drill-height-text">${value}cm</text>`;
-  }
-
-  function baseLabels(p){
     const d = p.dimensions;
-    if(p.shape === 'rectangle') return `<text x="115" y="253" class="drill-dim">横 ${d.width}cm</text><text x="38" y="185" class="drill-dim">たて ${d.depth}cm</text>`;
-    if(p.shape === 'square') return `<text x="125" y="253" class="drill-dim">一辺 ${d.side}cm</text>`;
-    if(p.shape === 'triangle') return `<text x="130" y="253" class="drill-dim">底辺 ${d.base}cm</text><text x="70" y="205" class="drill-dim">高さ ${d.triangleHeight}cm</text>`;
-    if(p.shape === 'parallelogram') return `<text x="128" y="253" class="drill-dim">底辺 ${d.base}cm</text><text x="62" y="205" class="drill-dim">高さ ${d.baseHeight}cm</text>`;
-    if(p.shape === 'trapezoid') return `<text x="138" y="138" class="drill-dim">上底 ${d.top}cm</text><text x="125" y="253" class="drill-dim">下底 ${d.bottom}cm</text><text x="55" y="205" class="drill-dim">高さ ${d.baseHeight}cm</text>`;
-    return `<text x="78" y="205" class="drill-dim">対角線 ${d.diagonal1}cm・${d.diagonal2}cm</text>`;
+    const dimensionsToShow=[{
+      from:{x:dimensionAnchor(p),y:0,z:0},to:{x:dimensionAnchor(p),y:p.solidHeight,z:0},
+      text:`高さ ${p.solidHeight}cm`,role:'height',offset:-7
+    }];
+    const internalLines=[];
+    if(p.shape==='circle'){
+      dimensionsToShow.push({from:{x:0,y:0,z:0},to:{x:d.radius,y:0,z:0},text:`半径 ${d.radius}cm`,role:'base',offset:10});
+      internalLines.push({from:{x:0,y:0,z:0},to:{x:d.radius,y:0,z:0},role:'base'});
+    }else if(p.shape==='square'){
+      dimensionsToShow.push({from:{x:-d.side/2,y:0,z:d.side/2},to:{x:d.side/2,y:0,z:d.side/2},text:`一辺 ${d.side}cm`,role:'base',offset:13});
+    }else if(p.shape==='rectangle'){
+      dimensionsToShow.push(
+        {from:{x:-d.width/2,y:0,z:d.depth/2},to:{x:d.width/2,y:0,z:d.depth/2},text:`横 ${d.width}cm`,role:'base',offset:13},
+        {from:{x:-d.width/2,y:0,z:-d.depth/2},to:{x:-d.width/2,y:0,z:d.depth/2},text:`たて ${d.depth}cm`,role:'base',offset:-13}
+      );
+    }else{
+      const text=p.shape==='triangle' ? `底辺 ${d.base}cm` :
+        p.shape==='parallelogram' ? `底辺 ${d.base}cm` :
+        p.shape==='trapezoid' ? `下底 ${d.bottom}cm` : `対角線 ${d.diagonal1}cm・${d.diagonal2}cm`;
+      dimensionsToShow.push({from:{x:-baseWidth(p)/2,y:0,z:baseDepth(p)/2},to:{x:baseWidth(p)/2,y:0,z:baseDepth(p)/2},text,role:'base',offset:13});
+      if(p.shape==='triangle' || p.shape==='parallelogram' || p.shape==='trapezoid'){
+        internalLines.push({from:{x:0,y:0,z:-baseDepth(p)/2},to:{x:0,y:0,z:baseDepth(p)/2},role:'base'});
+      }
+    }
+    SolidSVG.renderPrism(svg,{
+      width:360,height:280,shape:p.shape,dimensions:d,solidHeight:p.solidHeight,
+      color:'#63bdb7',baseColor:'#ff5d5d',angle:-42,
+      dimensionsToShow,internalLines,baseLabel:'底面'
+    });
+  }
+
+  function baseWidth(p){
+    const d=p.dimensions;
+    return d.base || d.bottom || d.diagonal1 || d.width || d.side || (d.radius ? d.radius*2 : 7);
+  }
+
+  function baseDepth(p){
+    const d=p.dimensions;
+    return d.triangleHeight || d.baseHeight || d.diagonal2 || d.depth || d.side || (d.radius ? d.radius*2 : 5);
+  }
+
+  function dimensionAnchor(p){
+    return baseWidth(p)/2+1.5;
   }
 
   function showHint(){
