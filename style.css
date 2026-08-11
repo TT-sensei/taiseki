@@ -221,21 +221,13 @@ main{ max-width: 960px; margin: 0 auto; padding: 18px 14px 90px; }
   padding: 14px;
 }
 .stack-canvas{
-  height: 320px;
-  display:flex; align-items:flex-end; justify-content:center;
-  perspective: 900px;
+  min-height: 320px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  touch-action:none;
 }
-.iso-scene{
-  transform-style: preserve-3d;
-  transform: rotateX(52deg) rotateZ(-38deg);
-  position:relative;
-}
-.iso-layer{
-  position:absolute;
-  left:0; top:0;
-  border: 1.6px solid rgba(31,58,61,.55);
-  box-shadow: 0 0 0 1px rgba(255,255,255,.15) inset;
-}
+.stack-solid-svg{ width:100%; height:300px; cursor:grab; user-select:none; }
+.stack-solid-svg.dragging{ cursor:grabbing; }
+.solid-instruction{ color:var(--ink-soft); font-size:11px; font-weight:700; text-align:center; }
 .stack-controls{ margin-top:14px; display:flex; flex-direction:column; gap:8px; }
 .stack-controls label{ font-size: 13.5px; font-weight:700; }
 .stack-controls input[type=range]{ width:100%; accent-color: var(--teal); }
@@ -329,16 +321,6 @@ main{ max-width: 960px; margin: 0 auto; padding: 18px 14px 90px; }
 .bonus-panel h3{ margin:0 0 6px; font-family: var(--font-display); }
 .bonus-panel.hidden{ display:none; }
 
-.layer-pop{
-  animation: layerPop .35s cubic-bezier(.34,1.6,.4,1);
-  transform-box: fill-box;
-  transform-origin: center;
-}
-@keyframes layerPop{
-  0%{ transform: scale(.4,.2); opacity:0; }
-  60%{ transform: scale(1.06,1.15); opacity:1; }
-  100%{ transform: scale(1,1); opacity:1; }
-}
 .cut-line{ stroke: var(--ink); stroke-width:2.5; stroke-dasharray:6 5; opacity:0; transition:opacity .4s; }
 .cut-line.show{ opacity:1; }
 .region-red{ fill: rgba(255,93,93,.4); stroke: var(--red); stroke-width:2; transition: fill .3s; }
@@ -443,14 +425,20 @@ main{ max-width: 960px; margin: 0 auto; padding: 18px 14px 90px; }
   padding:16px; background:linear-gradient(135deg,#f8fbf5,#eef6e8); border-right:2px solid var(--ink);
 }
 .drill-svg{ width:100%; max-width:380px; height:auto; overflow:visible; }
-.drill-top{ fill:rgba(255,255,255,.7); stroke:var(--ink); stroke-width:2.5; }
-.drill-base{ fill:rgba(255,93,93,.35); stroke:var(--red); stroke-width:4; }
-.drill-side{ fill:none; stroke:var(--ink-soft); stroke-width:2.5; }
-.drill-radius{ stroke:var(--red); stroke-width:3; stroke-dasharray:5 3; }
-.drill-height{ stroke:var(--blue); stroke-width:5; }
-.drill-height-tip{ fill:none; stroke:var(--blue); stroke-width:4; stroke-linecap:round; }
-.drill-height-text{ fill:#2467ba; font-family:var(--font-body); font-size:16px; font-weight:900; }
-.drill-dim{ fill:var(--ink); font-family:var(--font-body); font-size:13px; font-weight:700; }
+.solid-side-face{ opacity:.2; stroke:none; }
+.solid-top-face{ opacity:.32; stroke:var(--ink); stroke-width:2.4; stroke-linejoin:round; }
+.solid-base-face{ opacity:.2; stroke:none; }
+.solid-edge{ stroke:var(--ink-soft); stroke-width:2.2; fill:none; stroke-linecap:round; }
+.solid-base-edge{ stroke:var(--red); stroke-width:3.4; fill:none; stroke-linecap:round; }
+.solid-hidden-edge{ stroke-dasharray:6 5; opacity:.65; }
+.solid-layer-line{ fill:none; stroke:var(--ink-soft); stroke-width:1.2; opacity:.62; }
+.solid-helper{ fill:none; stroke:var(--ink-soft); stroke-width:1.8; stroke-dasharray:5 4; }
+.solid-base-helper{ fill:none; stroke:var(--red); stroke-width:2.4; stroke-dasharray:5 4; }
+.solid-dimension{ stroke:var(--ink); stroke-width:1.8; fill:none; }
+.solid-height-dimension{ stroke:var(--blue); stroke-width:3; }
+.solid-dimension-text{ fill:var(--ink); font-family:var(--font-body); font-size:12px; font-weight:900; paint-order:stroke; stroke:#fff; stroke-width:4px; stroke-linejoin:round; }
+.solid-height-text{ fill:#2467ba; }
+.solid-base-label{ fill:#b83434; font-family:var(--font-body); font-size:12px; font-weight:900; paint-order:stroke; stroke:#fff; stroke-width:4px; }
 .role-legend{ display:flex; gap:15px; margin-top:0; padding:7px 12px; background:#fff; border-radius:999px; font-size:11px; font-weight:900; }
 .role-base{ color:#c94343; }.role-height{ color:#2467ba; }
 .drill-answer-wrap{ min-height:430px; padding:22px; display:flex; flex-direction:column; }
