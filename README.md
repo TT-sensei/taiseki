@@ -42,3 +42,7 @@ mensekilab/
 - Step2の問題を増やす／ランダム生成にする
 - 正解時のサウンド・紙吹雪演出を追加する
 - localStorageで進捗を保存する
+
+## 公開ページ
+
+[GitHub Pagesで開く](https://tt-sensei.github.io/taiseki/)
