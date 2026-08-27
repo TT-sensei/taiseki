@@ -115,6 +115,13 @@ function buildCircle(svg){
       end[0].toFixed(2) + ' ' + end[1].toFixed(2) + ' Z';
   };
 
+  const matrixFor = (x, y, degrees) => {
+    const rad = degrees * Math.PI / 180;
+    const cos = Math.cos(rad).toFixed(6);
+    const sin = Math.sin(rad).toFixed(6);
+    return 'matrix(' + cos + ',' + sin + ',' + (-Number(sin)).toFixed(6) + ',' + cos + ',' + x + ',' + y + ')';
+  };
+
   const circle = svgEl('circle', {
     cx, cy, r,
     fill: 'none',
@@ -151,8 +158,7 @@ function buildCircle(svg){
     const group = svgEl('g', {class: 'piece circle-unfold-piece'});
     group.style.transformBox = 'view-box';
     group.style.transformOrigin = '0 0';
-    group.style.transform =
-      'translate(' + cx + 'px,' + cy + 'px) rotate(' + sourceRotation + 'deg)';
+    group.style.transform = matrixFor(cx, cy, sourceRotation);
 
     const path = svgEl('path', {
       d: sectorPath(r, angle),
@@ -169,8 +175,8 @@ function buildCircle(svg){
       guide.style.opacity = on ? '1' : '0';
       wedges.forEach(wedge => {
         wedge.group.style.transform = on
-          ? 'translate(' + wedge.targetX + 'px,' + wedge.targetY + 'px) rotate(' + wedge.targetRotation + 'deg)'
-          : 'translate(' + cx + 'px,' + cy + 'px) rotate(' + wedge.sourceRotation + 'deg)';
+          ? matrixFor(wedge.targetX, wedge.targetY, wedge.targetRotation)
+          : matrixFor(cx, cy, wedge.sourceRotation);
       });
     }
   };
