@@ -98,11 +98,10 @@ function buildCircle(svg){
   const angle = 360 / N;
   const halfAngle = Math.PI / N;
   const chord = 2 * r * Math.sin(halfAngle);
-  const height = r * Math.cos(halfAngle);
   const pairs = N / 2;
   const startX = 190;
   const topY = 84;
-  const bottomY = topY + height;
+  const bottomY = topY + r;
   const skew = chord / 2;
   const width = pairs * chord;
   const animationSeconds = '.9s';
