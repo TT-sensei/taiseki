@@ -148,7 +148,7 @@ function buildCircle(svg){
     group.style.transform = 'translate(' + cx + 'px,' + cy + 'px)';
 
     const inner = svgEl('g', {class: 'piece'});
-    inner.style.transformBox = 'fill-box';
+    inner.style.transformBox = 'view-box';
     inner.style.transformOrigin = '0 0';
     inner.style.transform = 'rotate(' + (i * angle) + 'deg)';
 
