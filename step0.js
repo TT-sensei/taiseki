@@ -89,42 +89,97 @@ function buildRhombus(svg){
   };
 }
 
-/* ---------- 5. 円：おうぎ形に切って並べ替え ---------- */
+/* ---------- 5. 円：扇形そのものを交互に並べ替える ---------- */
 function buildCircle(svg){
-  const cx=110, cy=170, r=70, N=20, delta=360/N;
-  const toRad = d => d*Math.PI/180;
-  const pointAt = (angleDeg) => [cx + r*Math.sin(toRad(angleDeg)), cy - r*Math.cos(toRad(angleDeg))];
+  const cx = 82;
+  const cy = 148;
+  const r = 62;
+  const N = 12;
+  const angle = 360 / N;
+  const halfAngle = Math.PI / N;
+  const chord = 2 * r * Math.sin(halfAngle);
+  const height = r * Math.cos(halfAngle);
+  const pairs = N / 2;
+  const startX = 190;
+  const topY = 84;
+  const bottomY = topY + height;
+  const skew = chord / 2;
+  const width = pairs * chord;
 
-  const w = 2*r*Math.sin(toRad(delta/2));
-  const h = r*Math.cos(toRad(delta/2));
-  const startX = 175, baseline = cy + h/2;
+  const sectorPath = (radius, degrees) => {
+    const startAngle = -Math.PI / 2;
+    const endAngle = startAngle + degrees * Math.PI / 180;
+    const start = [radius * Math.cos(startAngle), radius * Math.sin(startAngle)];
+    const end = [radius * Math.cos(endAngle), radius * Math.sin(endAngle)];
+    return 'M 0 0 L ' + start[0].toFixed(2) + ' ' + start[1].toFixed(2) +
+      ' A ' + radius + ' ' + radius + ' 0 0 1 ' +
+      end[0].toFixed(2) + ' ' + end[1].toFixed(2) + ' Z';
+  };
+
+  const circle = svgEl('circle', {
+    cx, cy, r,
+    fill: 'none',
+    stroke: 'var(--ink-soft)',
+    'stroke-width': 1.8,
+    'stroke-dasharray': '4 4'
+  });
+  svg.appendChild(circle);
+
+  const guide = svgEl('polygon', {
+    points: pts([
+      [startX, topY],
+      [startX + width, topY],
+      [startX + width + skew, bottomY],
+      [startX + skew, bottomY]
+    ]),
+    class: 'guide-dash'
+  });
+  guide.style.opacity = '0';
+  guide.style.transition = 'opacity .35s ease';
+  svg.appendChild(guide);
 
   const wedges = [];
-  for(let i=0;i<N;i++){
-    const centerAngle = i*delta;
-    const a1 = centerAngle - delta/2, a2 = centerAngle + delta/2;
-    const base1 = pointAt(a1), base2 = pointAt(a2);
-    const poly = svgEl('polygon', {
-      points: pts([[cx,cy], base1, base2]),
-      class: 'piece piece-outline fill-teal'
-    });
-    poly.style.transformOrigin = cx+'px '+cy+'px';
-    svg.appendChild(poly);
+  for(let i = 0; i < N; i += 1){
+    const pair = Math.floor(i / 2);
+    const pointsDown = i % 2 === 0;
+    const group = svgEl('g', {class: 'piece circle-unfold-piece'});
+    group.style.transformBox = 'view-box';
+    group.style.transformOrigin = '0 0';
+    group.style.transform = 'translate(' + cx + 'px,' + cy + 'px)';
 
-    const j = Math.floor(i/2);
-    const targetAngle = (i%2===0) ? 0 : 180;
-    const xTarget = startX + j*w;
-    const yTarget = (i%2===0) ? baseline : baseline - h;
-    const dx = xTarget - cx, dy = yTarget - cy;
-    const rot = targetAngle - centerAngle;
-    wedges.push({poly, dx, dy, rot});
+    const inner = svgEl('g', {class: 'piece'});
+    inner.style.transformBox = 'fill-box';
+    inner.style.transformOrigin = '0 0';
+    inner.style.transform = 'rotate(' + (i * angle) + 'deg)';
+
+    const path = svgEl('path', {
+      d: sectorPath(r, angle),
+      class: i % 2 === 0 ? 'piece-outline fill-teal' : 'piece-outline fill-coral'
+    });
+    inner.appendChild(path);
+    group.appendChild(inner);
+    svg.appendChild(group);
+
+    wedges.push({
+      group,
+      inner,
+      targetX: pointsDown ? startX + pair * chord + skew : startX + (pair + 1) * chord,
+      targetY: pointsDown ? bottomY : topY,
+      targetRotation: pointsDown ? -angle / 2 : 180 - angle / 2,
+      sourceRotation: i * angle
+    });
   }
+
   return {
     trigger(on){
-      wedges.forEach(wd=>{
-        wd.poly.style.transform = on
-          ? `translate(${wd.dx}px,${wd.dy}px) rotate(${wd.rot}deg)`
-          : 'translate(0px,0px) rotate(0deg)';
+      guide.style.opacity = on ? '1' : '0';
+      wedges.forEach(wedge => {
+        wedge.group.style.transform = on
+          ? 'translate(' + wedge.targetX + 'px,' + wedge.targetY + 'px)'
+          : 'translate(' + cx + 'px,' + cy + 'px)';
+        wedge.inner.style.transform = on
+          ? 'rotate(' + wedge.targetRotation + 'deg)'
+          : 'rotate(' + wedge.sourceRotation + 'deg)';
       });
     }
   };
