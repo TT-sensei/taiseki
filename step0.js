@@ -104,7 +104,6 @@ function buildCircle(svg){
   const bottomY = topY + r;
   const skew = chord / 2;
   const width = pairs * chord;
-  const animationSeconds = '.9s';
 
   const sectorPath = (radius, degrees) => {
     const startAngle = -Math.PI / 2;
@@ -149,70 +148,29 @@ function buildCircle(svg){
     const sourceRotation = i * angle;
     const targetRotation = pointsDown ? -angle / 2 : 180 - angle / 2;
 
-    const group = svgEl('g', {
-      class: 'circle-unfold-piece',
-      transform: 'translate(' + cx + ' ' + cy + ')'
-    });
-    const moveForward = svgEl('animateTransform', {
-      attributeName: 'transform',
-      type: 'translate',
-      from: cx + ' ' + cy,
-      to: targetX + ' ' + targetY,
-      dur: animationSeconds,
-      fill: 'freeze',
-      begin: 'indefinite'
-    });
-    const moveBack = svgEl('animateTransform', {
-      attributeName: 'transform',
-      type: 'translate',
-      from: targetX + ' ' + targetY,
-      to: cx + ' ' + cy,
-      dur: animationSeconds,
-      fill: 'freeze',
-      begin: 'indefinite'
-    });
+    const group = svgEl('g', {class: 'piece circle-unfold-piece'});
+    group.style.transformBox = 'view-box';
+    group.style.transformOrigin = '0 0';
+    group.style.transform =
+      'translate(' + cx + 'px,' + cy + 'px) rotate(' + sourceRotation + 'deg)';
 
-    const inner = svgEl('g', {transform: 'rotate(' + sourceRotation + ')'});
-    const rotateForward = svgEl('animateTransform', {
-      attributeName: 'transform',
-      type: 'rotate',
-      from: sourceRotation,
-      to: targetRotation,
-      dur: animationSeconds,
-      fill: 'freeze',
-      begin: 'indefinite'
-    });
-    const rotateBack = svgEl('animateTransform', {
-      attributeName: 'transform',
-      type: 'rotate',
-      from: targetRotation,
-      to: sourceRotation,
-      dur: animationSeconds,
-      fill: 'freeze',
-      begin: 'indefinite'
-    });
     const path = svgEl('path', {
       d: sectorPath(r, angle),
       class: i % 2 === 0 ? 'piece-outline fill-teal' : 'piece-outline fill-coral'
     });
-
-    inner.appendChild(rotateForward);
-    inner.appendChild(rotateBack);
-    inner.appendChild(path);
-    group.appendChild(moveForward);
-    group.appendChild(moveBack);
-    group.appendChild(inner);
+    group.appendChild(path);
     svg.appendChild(group);
 
-    wedges.push({group, moveForward, moveBack, rotateForward, rotateBack});
+    wedges.push({group, targetX, targetY, sourceRotation, targetRotation});
   }
 
   return {
     trigger(on){
       guide.style.opacity = on ? '1' : '0';
       wedges.forEach(wedge => {
-        (on ? wedge.moveForward : wedge.moveBack).beginElement();
-        (on ? wedge.rotateForward : wedge.rotateBack).beginElement();
+        wedge.group.style.transform = on
+          ? 'translate(' + wedge.targetX + 'px,' + wedge.targetY + 'px) rotate(' + wedge.targetRotation + 'deg)'
+          : 'translate(' + cx + 'px,' + cy + 'px) rotate(' + wedge.sourceRotation + 'deg)';
       });
     }
   };
