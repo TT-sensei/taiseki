@@ -104,24 +104,28 @@ function buildCircle(svg){
   const bottomY = topY + r;
   const skew = chord / 2;
   const width = pairs * chord;
+  const duration = 900;
 
-  const sectorPath = (radius, degrees) => {
+  const transformedSectorPath = (radius, degrees, x, y, rotation) => {
+    const rad = rotation * Math.PI / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+    const rotate = (px, py) => [
+      x + px * cos - py * sin,
+      y + px * sin + py * cos
+    ];
     const startAngle = -Math.PI / 2;
     const endAngle = startAngle + degrees * Math.PI / 180;
-    const start = [radius * Math.cos(startAngle), radius * Math.sin(startAngle)];
-    const end = [radius * Math.cos(endAngle), radius * Math.sin(endAngle)];
-    return 'M 0 0 L ' + start[0].toFixed(2) + ' ' + start[1].toFixed(2) +
+    const start = rotate(radius * Math.cos(startAngle), radius * Math.sin(startAngle));
+    const end = rotate(radius * Math.cos(endAngle), radius * Math.sin(endAngle));
+    const number = value => Number(value.toFixed(3));
+    return 'M ' + number(x) + ' ' + number(y) +
+      ' L ' + number(start[0]) + ' ' + number(start[1]) +
       ' A ' + radius + ' ' + radius + ' 0 0 1 ' +
-      end[0].toFixed(2) + ' ' + end[1].toFixed(2) + ' Z';
+      number(end[0]) + ' ' + number(end[1]) + ' Z';
   };
 
-  const matrixFor = (x, y, degrees) => {
-    const rad = degrees * Math.PI / 180;
-    const cos = Math.cos(rad).toFixed(6);
-    const sin = Math.sin(rad).toFixed(6);
-    return 'matrix(' + cos + ',' + sin + ',' + (-Number(sin)).toFixed(6) + ',' + cos + ',' + x + ',' + y + ')';
-  };
-
+  const ease = value => 1 - Math.pow(1 - value, 3);
   const circle = svgEl('circle', {
     cx, cy, r,
     fill: 'none',
@@ -134,8 +138,8 @@ function buildCircle(svg){
   const guide = svgEl('polygon', {
     points: pts([
       [startX, topY],
-      [startX + width, topY],
-      [startX + width + skew, bottomY],
+      [startX + pairs * chord, topY],
+      [startX + pairs * chord + skew, bottomY],
       [startX + skew, bottomY]
     ]),
     class: 'guide-dash'
@@ -154,29 +158,56 @@ function buildCircle(svg){
     const targetY = pointsDown ? bottomY : topY;
     const sourceRotation = i * angle;
     const targetRotation = pointsDown ? -angle / 2 : 180 - angle / 2;
-
-    const group = svgEl('g', {class: 'piece circle-unfold-piece'});
-    group.style.transformBox = 'view-box';
-    group.style.transformOrigin = '0 0';
-    group.style.transform = matrixFor(cx, cy, sourceRotation);
-
+    const group = svgEl('g', {class: 'circle-unfold-piece'});
     const path = svgEl('path', {
-      d: sectorPath(r, angle),
+      d: transformedSectorPath(r, angle, cx, cy, sourceRotation),
       class: i % 2 === 0 ? 'piece-outline fill-teal' : 'piece-outline fill-coral'
     });
     group.appendChild(path);
     svg.appendChild(group);
-
-    wedges.push({group, targetX, targetY, sourceRotation, targetRotation});
+    wedges.push({
+      path,
+      sourceX: cx,
+      sourceY: cy,
+      sourceRotation,
+      targetX,
+      targetY,
+      targetRotation,
+      progress: 0
+    });
   }
 
+  let animationToken = 0;
   return {
     trigger(on){
+      const token = ++animationToken;
+      const targetProgress = on ? 1 : 0;
+      const started = performance.now();
       guide.style.opacity = on ? '1' : '0';
-      wedges.forEach(wedge => {
-        wedge.group.style.transform = on
-          ? matrixFor(wedge.targetX, wedge.targetY, wedge.targetRotation)
-          : matrixFor(cx, cy, wedge.sourceRotation);
+
+      wedges.forEach((wedge, index) => {
+        const fromProgress = wedge.progress;
+        const delay = index * 38;
+        const tick = now => {
+          if(token !== animationToken) return;
+          const raw = Math.min(1, Math.max(0, (now - started - delay) / duration));
+          const current = fromProgress + (targetProgress - fromProgress) * ease(raw);
+          const x = wedge.sourceX + (wedge.targetX - wedge.sourceX) * current;
+          const y = wedge.sourceY + (wedge.targetY - wedge.sourceY) * current;
+          const rotation = wedge.sourceRotation +
+            (wedge.targetRotation - wedge.sourceRotation) * current;
+          wedge.path.setAttribute(
+            'd',
+            transformedSectorPath(r, angle, x, y, rotation)
+          );
+          wedge.progress = current;
+          if(raw < 1){
+            requestAnimationFrame(tick);
+          }else{
+            wedge.progress = targetProgress;
+          }
+        };
+        requestAnimationFrame(tick);
       });
     }
   };
