@@ -22,7 +22,7 @@ function initStep3(){
     answer:[
       {name:'かい', image:'kai/fullbody/checking-note.webp'},
       {name:'なみ', image:'nami/fullbody/reaching-out.webp'},
-      {name:'さく', image:'saku/fullbody/reaching-out.webp'}
+      {name:'さく', image:'saku/fullbody/reading.webp'}
     ],
     correct:[
       {name:'そら', image:'sora/fullbody/correct.webp'},
