@@ -83,7 +83,7 @@
 
   <!-- ========== STEP 3 ========== -->
   <section class="screen" id="screen-step3" data-screen="3">
-    <p class="screen-lead">レベルをえらんで、体積を表す式をつくろう！ <span class="lead-skip-note">🧮 計算はスキップ。式まででOK！</span></p>
+    <p class="screen-lead">レベルをえらんで、体積の式と答えを入れよう！ <span class="lead-skip-note">まずは自分で計算。わからないときはナビに聞けるよ。</span></p>
 
     <div class="drill-toolbar">
       <div class="level-selector" id="levelSelector" aria-label="レベルを選ぶ">
@@ -136,23 +136,38 @@
 
           <form id="drillAnswerForm" class="drill-answer-form">
             <div class="formula-form-head">
-              <label for="drillBaseExpression">体積を表す式</label>
-              <span class="calculation-skip-badge">🧮 計算スキップ</span>
+              <span class="formula-form-label">体積を表す式と答え</span>
+              <span class="attempt-note">まずは1回、自分で挑戦</span>
             </div>
-            <p class="formula-help">底面の式を（　）に入れて、高さをかけよう。答えの計算はしません。</p>
-            <div class="formula-editor" aria-label="体積を表す式を入力する欄">
-              <span class="formula-bracket">（</span>
-              <input type="text" id="drillBaseExpression" class="formula-input formula-base-input" inputmode="text" autocomplete="off" aria-label="底面の式" placeholder="底面の式">
-              <span class="formula-operator">）×</span>
-              <input type="text" id="drillHeightExpression" class="formula-input formula-height-input" inputmode="decimal" autocomplete="off" aria-label="高さの数" placeholder="高さ">
-              <span class="formula-result">＝ 体積</span>
+            <p class="formula-help">数を入れ、演算子をプルダウンから選んで、体積まで求めよう。</p>
+            <div class="formula-editor" aria-label="体積を表す式と答えを入力する欄">
+              <span class="formula-label">底面：</span>
+              <div id="drillBaseBuilder" class="formula-builder" aria-label="底面の式"></div>
+              <select id="drillVolumeOperator" class="formula-operator-select" aria-label="底面積と高さの演算子">
+                <option value="">演算子</option>
+                <option value="×">×</option>
+                <option value="＋">＋</option>
+                <option value="－">－</option>
+                <option value="÷">÷</option>
+              </select>
+              <input type="number" id="drillHeightExpression" class="formula-input formula-height-input" inputmode="decimal" min="0" step="any" autocomplete="off" aria-label="高さの数" placeholder="高さ">
+              <span class="formula-equals">＝</span>
+              <input type="number" id="drillVolumeAnswer" class="formula-input formula-volume-input" inputmode="decimal" min="0" step="any" autocomplete="off" aria-label="体積の答え" placeholder="答え">
+              <span class="formula-unit">cm³</span>
             </div>
-            <div id="drillFormulaPad" class="formula-pad" aria-label="式入力パッド"></div>
-            <button type="submit" id="drillCheckFormulaBtn" class="btn-primary">式をたしかめる</button>
+            <button type="submit" id="drillCheckFormulaBtn" class="btn-primary">式と答えをたしかめる</button>
           </form>
 
           <div id="drillFeedback" class="drill-feedback" role="status" aria-live="polite"></div>
           <div id="drillHint" class="drill-hint hidden"></div>
+          <div id="drillSkipPanel" class="drill-skip-panel hidden">
+            <p>一度考えたね。計算がむずかしいときは、ナビに答えを聞けます。</p>
+            <button type="button" id="drillSkipCalculationBtn" class="btn-secondary">🧮 計算をスキップして、答えを聞く</button>
+          </div>
+          <div id="drillAnswerReveal" class="drill-answer-reveal hidden" role="status" aria-live="polite">
+            <small>ナビが教えてくれた答え</small>
+            <strong id="drillAnswerRevealText"></strong>
+          </div>
           <div class="drill-actions">
             <button type="button" id="drillHintBtn" class="btn-secondary">ヒントを1つ見る</button>
             <button type="button" id="drillNextBtn" class="btn-primary hidden">つぎの問題 ▶</button>

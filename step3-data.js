@@ -37,7 +37,7 @@ function buildDrillProblem(config){
   problem.hints = [
     `${problem.baseName}の面積は「${problem.baseFormula}」で求めます。`,
     `図の数を入れると、底面の式は「${problem.baseExpression}」です。`,
-    `底面の式を（　）に入れて、高さ ${problem.solidHeight} をかけます。計算はしなくて大丈夫です。`
+    `底面の式に高さ ${problem.solidHeight} をかけて、体積の答えまで計算します。むずかしければナビに聞けます。`
   ];
   return problem;
 }

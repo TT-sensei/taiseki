@@ -19,6 +19,11 @@ function initStep3(){
       {name:'そら', image:'sora/fullbody/retry.webp'},
       {name:'つき', image:'tsuki/fullbody/retry.webp'}
     ],
+    answer:[
+      {name:'かい', image:'kai/fullbody/checking-note.webp'},
+      {name:'なみ', image:'nami/fullbody/reaching-out.webp'},
+      {name:'さく', image:'saku/fullbody/reaching-out.webp'}
+    ],
     correct:[
       {name:'そら', image:'sora/fullbody/correct.webp'},
       {name:'さく', image:'saku/fullbody/correct.webp'},
@@ -33,7 +38,6 @@ function initStep3(){
   let currentProblem = null;
   let hintLevel = 0;
   let answered = false;
-  let activeFormulaInput = null;
 
   const levelSelector = document.getElementById('levelSelector');
   const weakToggle = document.getElementById('weakToggle');
@@ -51,19 +55,22 @@ function initStep3(){
   const baseRoleText = document.getElementById('baseRoleText');
   const heightRoleText = document.getElementById('heightRoleText');
   const answerForm = document.getElementById('drillAnswerForm');
-  const baseInput = document.getElementById('drillBaseExpression');
+  const baseBuilder = document.getElementById('drillBaseBuilder');
+  const volumeOperatorInput = document.getElementById('drillVolumeOperator');
   const heightInput = document.getElementById('drillHeightExpression');
-  const formulaPad = document.getElementById('drillFormulaPad');
+  const volumeInput = document.getElementById('drillVolumeAnswer');
   const checkFormulaBtn = document.getElementById('drillCheckFormulaBtn');
   const feedback = document.getElementById('drillFeedback');
   const hint = document.getElementById('drillHint');
   const hintBtn = document.getElementById('drillHintBtn');
   const nextBtn = document.getElementById('drillNextBtn');
+  const skipPanel = document.getElementById('drillSkipPanel');
+  const skipCalculationBtn = document.getElementById('drillSkipCalculationBtn');
+  const answerReveal = document.getElementById('drillAnswerReveal');
+  const answerRevealText = document.getElementById('drillAnswerRevealText');
   const navi = document.getElementById('drillNavi');
   const naviImage = document.getElementById('drillNaviImage');
   const naviMessage = document.getElementById('drillNaviMessage');
-
-  activeFormulaInput = baseInput;
 
   function loadState(){
     try{
@@ -112,39 +119,76 @@ function initStep3(){
     return (String(problem.baseExpression || '').match(/\d+(?:\.\d+)?/g) || []).map(value => canonicalNumber(value));
   }
 
-  function keypadNumbersFor(problem){
-    const all = formulaNumbersFor(problem).concat(canonicalNumber(problem.solidHeight));
-    return all.filter((value, index) => all.indexOf(value) === index);
+  function baseFormulaTokens(problem){
+    return String(problem.baseExpression || '').match(/\d+(?:\.\d+)?|[×＋－−÷()（）]/g) || [];
   }
 
-  function addPadButton(label, kind, action){
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = `formula-pad-key${kind ? ` ${kind}` : ''}`;
-    button.textContent = label;
-    if(action === 'backspace' || action === 'clear') button.dataset.action = action;
-    else button.dataset.token = label;
-    formulaPad.appendChild(button);
+  function renderFormulaBuilder(problem){
+    baseBuilder.textContent = '';
+    baseFormulaTokens(problem).forEach(token => {
+      if(/^\d/.test(token)){
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.inputMode = 'decimal';
+        input.min = '0';
+        input.step = 'any';
+        input.autocomplete = 'off';
+        input.className = 'formula-input formula-number-input';
+        input.placeholder = '数';
+        input.setAttribute('aria-label', '底面の数');
+        input.dataset.formulaToken = 'number';
+        baseBuilder.appendChild(input);
+      }else if('×＋－−÷'.includes(token)){
+        const select = document.createElement('select');
+        select.className = 'formula-operator-select';
+        select.setAttribute('aria-label', '底面の演算子');
+        select.dataset.formulaToken = 'operator';
+        [['','選ぶ'],['×','×'],['＋','＋'],['－','－'],['÷','÷']].forEach(([value,label]) => {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = label;
+          select.appendChild(option);
+        });
+        baseBuilder.appendChild(select);
+      }else{
+        const span = document.createElement('span');
+        span.className = 'formula-static-token';
+        span.dataset.formulaToken = 'static';
+        span.textContent = token === '(' ? '（' : token === ')' ? '）' : token;
+        baseBuilder.appendChild(span);
+      }
+    });
   }
 
-  function renderFormulaPad(){
-    formulaPad.textContent = '';
-    if(!currentProblem) return;
-    keypadNumbersFor(currentProblem).forEach(value => addPadButton(value, 'number'));
-    ['×', '÷', '＋', '（', '）'].forEach(value => addPadButton(value, 'operator'));
-    addPadButton('⌫', 'action', 'backspace');
-    addPadButton('C', 'action', 'clear');
+  function collectBaseExpression(){
+    return [...baseBuilder.querySelectorAll('[data-formula-token]')].map(element => {
+      if(element.matches('input, select')) return element.value.trim();
+      return element.textContent;
+    }).join('');
   }
 
   function clearFormulaInputs(){
-    [baseInput, heightInput].forEach(input => {
+    [heightInput, volumeInput].forEach(input => {
       input.value = '';
       input.disabled = false;
       input.classList.remove('invalid');
     });
-    activeFormulaInput = baseInput;
+    volumeOperatorInput.value = '';
+    baseBuilder.querySelectorAll('input').forEach(input => {
+      input.value = '';
+      input.disabled = false;
+      input.classList.remove('invalid');
+    });
+    baseBuilder.querySelectorAll('select').forEach(select => {
+      select.value = '';
+      select.disabled = false;
+      select.classList.remove('invalid');
+    });
     checkFormulaBtn.disabled = false;
-    formulaPad.querySelectorAll('button').forEach(button => { button.disabled = false; });
+    skipPanel.classList.add('hidden');
+    skipCalculationBtn.disabled = false;
+    answerReveal.classList.add('hidden');
+    answerRevealText.textContent = '';
   }
 
   function nextProblem(){
@@ -187,12 +231,13 @@ function initStep3(){
     modeTag.classList.toggle('hidden', !state.weakOnly);
     problemNumber.textContent = `${state.shown}問目`;
     solidName.textContent = p.solidName;
-    questionText.innerHTML = `${p.questionText}<br><strong>体積を表す式をつくりましょう。</strong><small>答えの計算はしません。</small>`;
+    questionText.innerHTML = `${p.questionText}<br><strong>体積の式と答えを入れましょう。</strong><small>まずは1回、自分で計算してみよう。</small>`;
     baseRoleText.textContent = '図の数を使って式をつくる';
     heightRoleText.textContent = `${drillNumber(p.solidHeight)} cm`;
     renderDrillDiagram(p);
-    renderFormulaPad();
-    setNavi('thinking', '赤い底面の式を（　）に入れてから、高さをかけよう。');
+    renderFormulaBuilder(p);
+    volumeOperatorInput.value = '';
+    setNavi('thinking', 'まずは赤い底面の式と、体積の答えに挑戦してみよう。');
   }
 
   function renderDrillDiagram(p){
@@ -265,6 +310,7 @@ function initStep3(){
       .replace(/[×✕xX＊]/g, '*')
       .replace(/[÷／]/g, '/')
       .replace(/[＋]/g, '+')
+      .replace(/[−－]/g, '-')
       .replace(/[（]/g, '(')
       .replace(/[）]/g, ')')
       .replace(/\s+/g, '');
@@ -272,7 +318,7 @@ function initStep3(){
 
   function parseFormula(raw){
     const source = normalizeFormula(raw);
-    if(!source || /[^0-9.+*/()]/.test(source)) return null;
+    if(!source || /[^0-9.+*/()\-]/.test(source)) return null;
 
     const tokens = [];
     const numbers = [];
@@ -347,29 +393,6 @@ function initStep3(){
     return expected.length === actual.length && expected.every((value, index) => value === actual[index]);
   }
 
-  function insertAtCursor(input, token){
-    if(!input || input.disabled) return;
-    const start = Number.isInteger(input.selectionStart) ? input.selectionStart : input.value.length;
-    const end = Number.isInteger(input.selectionEnd) ? input.selectionEnd : start;
-    input.value = input.value.slice(0, start) + token + input.value.slice(end);
-    const cursor = start + token.length;
-    input.focus();
-    input.setSelectionRange(cursor, cursor);
-    input.classList.remove('invalid');
-  }
-
-  function eraseAtCursor(input){
-    if(!input || input.disabled) return;
-    const start = Number.isInteger(input.selectionStart) ? input.selectionStart : input.value.length;
-    const end = Number.isInteger(input.selectionEnd) ? input.selectionEnd : start;
-    if(start === end && start === 0) return;
-    const removeStart = start === end ? start - 1 : start;
-    input.value = input.value.slice(0, removeStart) + input.value.slice(end);
-    input.focus();
-    input.setSelectionRange(removeStart, removeStart);
-    input.classList.remove('invalid');
-  }
-
   function playSound(method){
     if(window.EduSound && typeof window.EduSound[method] === 'function') window.EduSound[method]();
   }
@@ -381,38 +404,89 @@ function initStep3(){
     feedback.className = 'drill-feedback hint';
     feedback.textContent = message;
     if(input) input.classList.add('invalid');
+    skipPanel.classList.remove('hidden');
+    skipCalculationBtn.disabled = false;
     if(hintLevel === 0) showHint();
     setNavi('retry', naviText);
     playSound('playTryAgain');
   }
 
   function displayFormula(raw){
-    return String(raw).replace(/[xX*]/g, '×').replace(/\//g, '÷').replace(/\+/g, '＋');
+    return String(raw).replace(/[xX*]/g, '×').replace(/\//g, '÷').replace(/\+/g, '＋').replace(/-/g, '－');
+  }
+
+  function baseWithBrackets(raw){
+    const shown = displayFormula(raw);
+    return /^[（(].*[）)]$/.test(shown) ? shown : `（${shown}）`;
+  }
+
+  function markFormulaInputsInvalid(){
+    baseBuilder.querySelectorAll('input,select').forEach(input => input.classList.add('invalid'));
+  }
+
+  function disableFormulaInputs(){
+    baseBuilder.querySelectorAll('input,select').forEach(input => { input.disabled = true; });
+    [volumeOperatorInput, heightInput, volumeInput].forEach(input => { input.disabled = true; });
+  }
+
+  function revealCalculationAnswer(){
+    if(!currentProblem || answered) return;
+    answered = true;
+    state.combo = 0;
+    state.weak[currentProblem.key] = currentProblem;
+    saveState();
+    const expression = `${baseWithBrackets(currentProblem.baseExpression)} × ${drillNumber(currentProblem.solidHeight)}`;
+    answerRevealText.textContent = `${expression} ＝ ${drillNumber(currentProblem.answer)} cm³`;
+    answerReveal.classList.remove('hidden');
+    skipPanel.classList.add('hidden');
+    feedback.className = 'drill-feedback hint';
+    feedback.textContent = 'ナビが答えを教えてくれたよ。式の形を写して、次の問題で使ってみよう。';
+    baseRoleText.textContent = baseWithBrackets(currentProblem.baseExpression);
+    heightRoleText.textContent = `${drillNumber(currentProblem.solidHeight)} cm`;
+    disableFormulaInputs();
+    checkFormulaBtn.disabled = true;
+    hintBtn.classList.add('hidden');
+    nextBtn.classList.remove('hidden');
+    setNavi('answer', `答えは ${drillNumber(currentProblem.answer)}cm³。式はこの形だよ。`);
+    playSound('playTryAgain');
   }
 
   function checkAnswer(event){
     event.preventDefault();
     if(!currentProblem || answered) return;
-    const baseRaw = baseInput.value.trim();
+    const baseRaw = collectBaseExpression();
     const heightRaw = heightInput.value.trim();
-    baseInput.classList.remove('invalid');
-    heightInput.classList.remove('invalid');
+    const volumeRaw = volumeInput.value.trim();
+    baseBuilder.querySelectorAll('input,select').forEach(input => input.classList.remove('invalid'));
+    [volumeOperatorInput, heightInput, volumeInput].forEach(input => input.classList.remove('invalid'));
 
-    if(!baseRaw || !heightRaw){
+    if(!baseRaw || !heightRaw || !volumeRaw || !volumeOperatorInput.value){
       feedback.className = 'drill-feedback hint';
-      feedback.textContent = '赤い底面の式と、青い高さの数を入れてみよう。';
-      if(!baseRaw) baseInput.classList.add('invalid');
+      feedback.textContent = '式の数・演算子・高さ・答えを入れて、1回挑戦してみよう。';
+      if(!baseRaw) markFormulaInputsInvalid();
+      if(!volumeOperatorInput.value) volumeOperatorInput.classList.add('invalid');
       if(!heightRaw) heightInput.classList.add('invalid');
+      if(!volumeRaw) volumeInput.classList.add('invalid');
+      skipPanel.classList.remove('hidden');
+      setNavi('retry', '一度入力してみたね。わからないときは、ぼくに聞いてね。');
+      playSound('playTryAgain');
+      return;
+    }
+
+    if(volumeOperatorInput.value !== '×'){
+      showFormulaIssue('底面積と高さは「×」でつなごう。', volumeOperatorInput, '底面積と高さは、かけ算でつなぐよ。');
       return;
     }
 
     const parsedBase = parseFormula(baseRaw);
     if(!parsedBase || !usesRequiredNumbers(parsedBase ? parsedBase.numbers : [], currentProblem)){
-      showFormulaIssue('赤い底面には、図にある数と ×・÷・＋ を使って式を入れよう。', baseInput, '図の赤い底面だけを見て、使う数を確かめよう。');
+      markFormulaInputsInvalid();
+      showFormulaIssue('赤い底面には、図にある数と演算子を使って式を入れよう。', null, '図の赤い底面だけを見て、使う数と演算子を確かめよう。');
       return;
     }
     if(Math.abs(parsedBase.value - currentProblem.baseArea) > DRILL_ROUNDING.tolerance){
-      showFormulaIssue('赤い底面の公式を見直してみよう。必要ならヒントを見てみよう。', baseInput, 'かける数・足す数・÷2 が合っているかを見直そう。');
+      markFormulaInputsInvalid();
+      showFormulaIssue('赤い底面の公式を見直してみよう。', null, 'かける数・足す数・÷2 が合っているかを見直そう。');
       return;
     }
 
@@ -422,23 +496,31 @@ function initStep3(){
       return;
     }
 
+    const normalizedVolume = normalizeFormula(volumeRaw);
+    if(!/^\d+(?:\.\d+)?$/.test(normalizedVolume) || Math.abs(Number(normalizedVolume) - currentProblem.answer) > DRILL_ROUNDING.tolerance){
+      showFormulaIssue('体積の答えをもう一度計算してみよう。わからなければ、ナビに聞いて大丈夫。', volumeInput, '答えの計算がむずかしければ、ぼくに聞いてね。');
+      return;
+    }
+
     answered = true;
     state.combo += 1;
     state.totalCorrect += 1;
     if(state.weakOnly) delete state.weak[currentProblem.key];
     saveState();
+    const shownBase = baseWithBrackets(baseRaw);
     feedback.className = 'drill-feedback ok';
     feedback.textContent = state.combo >= 2
-      ? `せいかい！ ${state.combo}コンボ！ 体積を「（${displayFormula(baseRaw)}）× ${normalizedHeight}」と表せたね。計算はスキップでOK！`
-      : `せいかい！ 体積を「（${displayFormula(baseRaw)}）× ${normalizedHeight}」と表せたね。計算はスキップでOK！`;
-    baseRoleText.textContent = `（${displayFormula(baseRaw)}）`;
+      ? `せいかい！ ${state.combo}コンボ！ ${shownBase} × ${normalizedHeight} ＝ ${normalizedVolume} cm³。`
+      : `せいかい！ ${shownBase} × ${normalizedHeight} ＝ ${normalizedVolume} cm³。`;
+    baseRoleText.textContent = shownBase;
     heightRoleText.textContent = `${normalizedHeight} cm`;
-    [baseInput, heightInput].forEach(input => { input.disabled = true; });
-    formulaPad.querySelectorAll('button').forEach(button => { button.disabled = true; });
+    disableFormulaInputs();
     checkFormulaBtn.disabled = true;
+    skipPanel.classList.add('hidden');
+    answerReveal.classList.add('hidden');
     hintBtn.classList.add('hidden');
     nextBtn.classList.remove('hidden');
-    setNavi('correct', '体積を表す式ができたね！ 計算はここでおしまい。');
+    setNavi('correct', '式も答えもばっちり！ 計算できたね。');
     playSound('playCorrect');
   }
 
@@ -461,26 +543,16 @@ function initStep3(){
     saveState();
     nextProblem();
   });
-  [baseInput, heightInput].forEach(input => {
-    input.addEventListener('focus', () => { activeFormulaInput = input; });
+  baseBuilder.addEventListener('input', event => event.target.classList.remove('invalid'));
+  baseBuilder.addEventListener('change', event => event.target.classList.remove('invalid'));
+  [volumeOperatorInput, heightInput, volumeInput].forEach(input => {
     input.addEventListener('input', () => { input.classList.remove('invalid'); });
-  });
-  formulaPad.addEventListener('click', event => {
-    const button = event.target.closest('.formula-pad-key');
-    if(!button || button.disabled) return;
-    const input = activeFormulaInput || baseInput;
-    if(button.dataset.action === 'backspace') eraseAtCursor(input);
-    else if(button.dataset.action === 'clear'){
-      input.value = '';
-      input.classList.remove('invalid');
-      input.focus();
-    }else if(button.dataset.token){
-      insertAtCursor(input, button.dataset.token);
-    }
+    input.addEventListener('change', () => { input.classList.remove('invalid'); });
   });
   answerForm.addEventListener('submit', checkAnswer);
   hintBtn.addEventListener('click', showHint);
   nextBtn.addEventListener('click', nextProblem);
+  skipCalculationBtn.addEventListener('click', revealCalculationAnswer);
 
   updateToolbar();
   nextProblem();
