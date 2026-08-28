@@ -113,11 +113,13 @@ function initStep2(){
       feedbackEl.textContent = colorText
         ? `おしい！${colorText}の長方形の${dimText}をもういちど図で見てみよう。`
         : '計算をもういちど見直してみよう。かけ算の答えはあってるかな？';
+      if(window.EduSound) window.EduSound.playTryAgain();
     } else {
       feedbackEl.className = 'puzzle-feedback ok';
       feedbackEl.textContent = 'せいかい！🎉 色あわせがバッチリできたね。';
       solved.add(idx);
       updateNav();
+      if(window.EduSound) window.EduSound.playCorrect();
     }
   });
 

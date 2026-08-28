@@ -4,6 +4,24 @@
    ========================================================= */
 document.addEventListener('DOMContentLoaded', () => {
 
+  // ---- おと ----
+  const soundToggle = document.getElementById('soundToggle');
+  if(soundToggle && window.EduSound){
+    const updateSoundToggle = () => {
+      const enabled = window.EduSound.isEnabled();
+      soundToggle.setAttribute('aria-pressed', String(enabled));
+      soundToggle.setAttribute('aria-label', enabled ? 'おとをオフにする' : 'おとをオンにする');
+      soundToggle.innerHTML = enabled
+        ? '<span aria-hidden="true">🔊</span><span>おと</span>'
+        : '<span aria-hidden="true">🔇</span><span>おと</span>';
+    };
+    soundToggle.addEventListener('click', () => {
+      window.EduSound.setEnabled(!window.EduSound.isEnabled());
+      updateSoundToggle();
+    });
+    updateSoundToggle();
+  }
+
   // ---- 画面切り替え ----
   const tabs = document.querySelectorAll('.tab');
   const screens = document.querySelectorAll('.screen');

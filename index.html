@@ -11,8 +11,12 @@
 <!-- ヘッダー：ノート表紙風タブナビ -->
 <header class="app-header">
   <div class="header-inner">
-    <h1 class="app-title"><span class="title-mensek">めんせき</span><span class="title-dot">・</span><span class="title-taisek">たいせき</span>ラボ</h1>
-    <p class="app-sub">いじって、わかる。図形の公式ずかん</p>
+    <div class="header-copy">
+      <h1 class="app-title"><span class="title-mensek">めんせき</span><span class="title-dot">・</span><span class="title-taisek">たいせき</span>ラボ</h1>
+      <p class="app-sub">いじって、わかる。図形の公式ずかん</p>
+    </div>
+    <img class="header-navi" src="https://tt-sensei.github.io/navi-character-/assets/web/groups/learning/group-learning-math-shapes.webp" alt="図形について学ぶナビキャラたち" decoding="async">
+    <button type="button" id="soundToggle" class="sound-toggle" aria-pressed="true" aria-label="おとをオフにする"><span aria-hidden="true">🔊</span><span>おと</span></button>
   </div>
   <nav class="step-tabs" id="stepTabs">
     <button class="tab" data-step="0"><span class="tab-num">0</span><span class="tab-label">こうしきずかん</span></button>
@@ -79,7 +83,7 @@
 
   <!-- ========== STEP 3 ========== -->
   <section class="screen" id="screen-step3" data-screen="3">
-    <p class="screen-lead">レベルをえらんで、体積の問題にどんどんチャレンジしよう！</p>
+    <p class="screen-lead">レベルをえらんで、体積を表す式をつくろう！ <span class="lead-skip-note">🧮 計算はスキップ。式まででOK！</span></p>
 
     <div class="drill-toolbar">
       <div class="level-selector" id="levelSelector" aria-label="レベルを選ぶ">
@@ -116,20 +120,35 @@
         <div class="drill-visual-wrap">
           <svg id="drillSvg" class="drill-svg" viewBox="0 0 360 280" role="img" aria-label="体積を求める立体"></svg>
           <div class="role-legend"><span class="role-base">■ 底面積</span><span class="role-height">■ 高さ</span></div>
+          <div id="drillNavi" class="drill-navi" data-mood="thinking">
+            <img id="drillNaviImage" src="https://tt-sensei.github.io/navi-character-/assets/web/characters/kai/fullbody/thinking.webp" alt="考えるかい">
+            <p id="drillNaviMessage">赤い底面の式を先につくろう。</p>
+          </div>
         </div>
         <div class="drill-answer-wrap">
           <p class="drill-solid-name" id="drillSolidName"></p>
-          <h2 id="drillQuestionText">体積を求めましょう。</h2>
+          <h2 id="drillQuestionText">体積を表す式をつくりましょう。</h2>
 
           <div class="role-cards">
-            <div class="role-card base-card"><small>① 赤い底面の面積</small><strong id="baseRoleText">？ cm²</strong></div>
+            <div class="role-card base-card"><small>① 赤い底面の式</small><strong id="baseRoleText">図の数を使って式をつくる</strong></div>
             <div class="role-card height-card"><small>② 青い高さ</small><strong id="heightRoleText">？ cm</strong></div>
           </div>
 
           <form id="drillAnswerForm" class="drill-answer-form">
-            <label for="drillAnswer">体積</label>
-            <div><input type="number" id="drillAnswer" inputmode="decimal" min="0" step="any" autocomplete="off"><span>cm³</span></div>
-            <button type="submit" class="btn-primary">答えあわせ</button>
+            <div class="formula-form-head">
+              <label for="drillBaseExpression">体積を表す式</label>
+              <span class="calculation-skip-badge">🧮 計算スキップ</span>
+            </div>
+            <p class="formula-help">底面の式を（　）に入れて、高さをかけよう。答えの計算はしません。</p>
+            <div class="formula-editor" aria-label="体積を表す式を入力する欄">
+              <span class="formula-bracket">（</span>
+              <input type="text" id="drillBaseExpression" class="formula-input formula-base-input" inputmode="text" autocomplete="off" aria-label="底面の式" placeholder="底面の式">
+              <span class="formula-operator">）×</span>
+              <input type="text" id="drillHeightExpression" class="formula-input formula-height-input" inputmode="decimal" autocomplete="off" aria-label="高さの数" placeholder="高さ">
+              <span class="formula-result">＝ 体積</span>
+            </div>
+            <div id="drillFormulaPad" class="formula-pad" aria-label="式入力パッド"></div>
+            <button type="submit" id="drillCheckFormulaBtn" class="btn-primary">式をたしかめる</button>
           </form>
 
           <div id="drillFeedback" class="drill-feedback" role="status" aria-live="polite"></div>
@@ -157,6 +176,7 @@
 
 <script src="shapes-data.js"></script>
 <script src="solid-svg.js"></script>
+<script src="sound.js"></script>
 <script src="step0.js?v=20260827-8"></script>
 <script src="step1.js"></script>
 <script src="step2-data.js"></script>

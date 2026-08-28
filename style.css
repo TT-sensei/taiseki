@@ -45,9 +45,12 @@ button{ font-family: inherit; cursor:pointer; }
 }
 .header-inner{
   max-width: 960px; margin:0 auto;
-  padding: 14px 18px 6px;
+  min-height:82px;
+  padding: 10px 116px 6px 54px;
+  position:relative;
   text-align:center;
 }
+.header-copy{ min-width:0; }
 .app-title{
   font-family: var(--font-display);
   font-weight:900;
@@ -63,6 +66,21 @@ button{ font-family: inherit; cursor:pointer; }
   font-size: 13px;
   color: var(--ink-soft);
 }
+.header-navi{
+  position:absolute; right:54px; bottom:0;
+  width:86px; height:76px; object-fit:contain;
+  pointer-events:none;
+}
+.sound-toggle{
+  position:absolute; top:11px; right:12px;
+  min-height:33px; padding:5px 8px;
+  display:flex; align-items:center; gap:3px;
+  color:var(--ink); background:var(--white);
+  border:2px solid var(--ink); border-radius:999px;
+  font-size:11px; font-weight:900; line-height:1;
+  box-shadow:var(--shadow-sm);
+}
+.sound-toggle[aria-pressed="false"]{ color:var(--ink-soft); background:var(--paper); box-shadow:none; transform:translateY(2px); }
 .step-tabs{
   max-width: 960px; margin: 0 auto;
   display:flex; gap:8px;
@@ -117,6 +135,7 @@ main{ max-width: 960px; margin: 0 auto; padding: 18px 14px 90px; }
   padding: 10px 16px;
   margin: 0 0 16px;
 }
+.lead-skip-note{ display:inline-block; margin-left:5px; color:#8a5a00; font-size:12px; white-space:nowrap; }
 
 /* ---------- Step0: 図形カード ---------- */
 .shape-grid{
@@ -441,30 +460,61 @@ main{ max-width: 960px; margin: 0 auto; padding: 18px 14px 90px; }
 .solid-base-label{ fill:#b83434; font-family:var(--font-body); font-size:12px; font-weight:900; paint-order:stroke; stroke:#fff; stroke-width:4px; }
 .role-legend{ display:flex; gap:15px; margin-top:0; padding:7px 12px; background:#fff; border-radius:999px; font-size:11px; font-weight:900; }
 .role-base{ color:#c94343; }.role-height{ color:#2467ba; }
+.drill-navi{
+  width:min(100%,330px); min-height:58px; margin-top:8px;
+  display:flex; align-items:center; gap:7px;
+}
+.drill-navi img{ width:62px; height:62px; object-fit:contain; flex:0 0 auto; }
+.drill-navi p{
+  margin:0; padding:8px 10px; flex:1;
+  color:var(--ink); background:var(--white); border:1.5px solid var(--ink);
+  border-radius:12px; font-size:11.5px; font-weight:800; line-height:1.4;
+}
+.drill-navi[data-mood="correct"] p{ color:var(--teal-deep); background:#e7f7f4; }
+.drill-navi[data-mood="retry"] p{ color:#8a5a00; background:#fff8df; }
 .drill-answer-wrap{ min-height:430px; padding:22px; display:flex; flex-direction:column; }
 .drill-solid-name{ align-self:flex-start; margin:0 0 6px; padding:5px 10px; border-radius:999px; color:var(--teal-deep); background:#e2f5f2; font-size:12px; font-weight:900; }
-.drill-answer-wrap h2{ margin:0 0 16px; font-family:var(--font-display); font-size:18px; line-height:1.7; }
+.drill-answer-wrap h2{ margin:0 0 12px; font-family:var(--font-display); font-size:18px; line-height:1.55; }
 .drill-answer-wrap h2 strong{ color:var(--ink); font-size:20px; }
 .drill-answer-wrap h2 small{ display:block; margin-top:4px; color:var(--ink-soft); font-size:11px; }
-.role-cards{ display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:15px; }
-.role-card{ min-height:67px; padding:10px 12px; border-radius:12px; border:2px solid; }
+.role-cards{ display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-bottom:11px; }
+.role-card{ min-height:62px; padding:9px 10px; border-radius:12px; border:2px solid; }
 .role-card small,.role-card strong{ display:block; }
 .role-card small{ margin-bottom:5px; font-size:10.5px; font-weight:700; }
-.role-card strong{ font-size:14px; }
+.role-card strong{ font-size:13px; }
 .base-card{ color:#a63333; background:rgba(255,93,93,.09); border-color:var(--red); }
 .height-card{ color:#235f9f; background:rgba(77,150,255,.09); border-color:var(--blue); }
 .drill-answer-form{
-  display:grid; grid-template-columns:auto 1fr auto; align-items:end; gap:9px;
-  padding:13px; border-radius:14px; background:var(--paper);
+  display:flex; flex-direction:column; align-items:stretch; gap:8px;
+  padding:11px; border-radius:14px; background:var(--paper);
 }
-.drill-answer-form label{ grid-column:1 / -1; font-weight:900; font-size:12px; }
-.drill-answer-form > div{ display:flex; align-items:center; gap:7px; }
-.drill-answer-form input{
-  width:145px; height:48px; padding:6px 9px; border:2.5px solid var(--ink);
-  border-radius:10px; background:var(--white); text-align:right; font-size:20px; font-weight:900;
+.formula-form-head{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.drill-answer-form label{ font-weight:900; font-size:12px; }
+.calculation-skip-badge{ padding:4px 7px; color:#8a5a00; background:#fff0c9; border:1px solid var(--sun); border-radius:999px; font-size:10.5px; font-weight:900; white-space:nowrap; }
+.formula-help{ margin:0; color:var(--ink-soft); font-size:11px; font-weight:700; line-height:1.4; }
+.formula-editor{ display:flex; align-items:center; flex-wrap:wrap; gap:4px; color:var(--ink); font-weight:900; }
+.formula-bracket,.formula-operator{ font-size:19px; line-height:1; }
+.formula-input{
+  height:39px; padding:5px 7px; border:2px solid var(--ink);
+  border-radius:8px; background:var(--white); color:var(--ink);
+  font-family:inherit; font-size:16px; font-weight:900; text-align:center;
 }
-.drill-answer-form span{ font-weight:900; }
-.drill-answer-form .btn-primary{ min-width:120px; padding:11px 15px; }
+.formula-input:focus{ outline:3px solid rgba(77,150,255,.28); border-color:#2467ba; }
+.formula-input.invalid{ border-color:var(--coral); background:#fff2ef; }
+.formula-base-input{ flex:1 1 150px; min-width:130px; }
+.formula-height-input{ flex:0 0 70px; width:70px; }
+.formula-result{ color:var(--ink-soft); font-size:12px; white-space:nowrap; }
+.formula-pad{ display:flex; flex-wrap:wrap; gap:5px; }
+.formula-pad-key{
+  min-width:37px; height:32px; padding:3px 7px;
+  color:var(--ink); background:var(--white); border:1.5px solid var(--ink);
+  border-radius:8px; font:inherit; font-size:13px; font-weight:900;
+}
+.formula-pad-key.operator{ color:#235f9f; background:#edf5ff; }
+.formula-pad-key.action{ color:#8a5a00; background:#fff8df; }
+.formula-pad-key:active{ transform:translateY(1px); }
+.formula-pad-key:disabled{ opacity:.55; cursor:default; transform:none; }
+.drill-answer-form .btn-primary{ align-self:flex-end; min-width:136px; padding:9px 14px; }
 .drill-feedback{ min-height:45px; margin-top:10px; padding:9px 11px; border-radius:11px; font-size:13px; font-weight:700; line-height:1.55; }
 .drill-feedback.ok{ color:var(--teal-deep); background:rgba(31,166,160,.15); }
 .drill-feedback.hint{ color:#8a5a00; background:rgba(255,177,0,.18); }
@@ -481,20 +531,25 @@ main{ max-width: 960px; margin: 0 auto; padding: 18px 14px 90px; }
 .drill-empty > div{ font-size:48px; }.drill-empty h3{ margin:8px 0 5px; font-family:var(--font-display); }.drill-empty p{ color:var(--ink-soft); font-size:13px; }
 
 @media (max-width:800px){
+  .header-inner{ min-height:76px; padding-right:108px; }
+  .header-navi{ width:76px; height:68px; right:50px; }
   .drill-toolbar{ grid-template-columns:1fr; }
   .weak-toggle{ min-height:58px; justify-content:center; }
   .drill-main{ grid-template-columns:1fr; }
-  .drill-visual-wrap{ min-height:300px; border-right:none; border-bottom:2px solid var(--ink); }
+  .drill-visual-wrap{ min-height:370px; border-right:none; border-bottom:2px solid var(--ink); }
   .drill-svg{ max-width:330px; }
-  .drill-answer-wrap{ min-height:410px; }
+  .drill-answer-wrap{ min-height:420px; }
 }
 @media (max-width:520px){
+  .header-inner{ min-height:auto; padding:10px 54px 6px 10px; }
+  .header-navi{ display:none; }
+  .sound-toggle{ right:9px; top:10px; }
+  .lead-skip-note{ margin:4px 0 0; display:block; }
   .level-selector{ gap:5px; padding:6px; }
   .level-btn{ min-height:58px; }.level-btn b{ font-size:15px; }.level-btn span{ font-size:9px; }
   .role-cards{ grid-template-columns:1fr; }
-  .drill-answer-form{ grid-template-columns:1fr; }
-  .drill-answer-form label{ grid-column:auto; }
-  .drill-answer-form input{ width:100%; }
+  .formula-base-input{ min-width:118px; }
+  .formula-result{ width:100%; }
   .drill-answer-form .btn-primary{ width:100%; }
   .drill-actions{ flex-direction:column; }.drill-actions button{ width:100%; }
 }

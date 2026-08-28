@@ -30,13 +30,14 @@ function buildDrillProblem(config){
   const problem = Object.assign({}, config, {
     answer,
     level: Number(config.level),
-    roundingText: Number.isInteger(answer) ? '' : '答えは小数第2位までで求めます。'
+    roundingText: '',
+    formulaNumbers: (config.baseExpression.match(/\d+(?:\.\d+)?/g) || []).map(Number)
   });
   problem.key = [problem.level, problem.type, problem.baseExpression, problem.solidHeight].join('|');
   problem.hints = [
     `${problem.baseName}の面積は「${problem.baseFormula}」で求めます。`,
-    `底面積は ${problem.baseExpression} ＝ ${drillNumber(problem.baseArea)}cm² です。`,
-    `体積は ${drillNumber(problem.baseArea)} × ${problem.solidHeight} で求めます。`
+    `図の数を入れると、底面の式は「${problem.baseExpression}」です。`,
+    `底面の式を（　）に入れて、高さ ${problem.solidHeight} をかけます。計算はしなくて大丈夫です。`
   ];
   return problem;
 }
